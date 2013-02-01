@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.HasTouchScreen;
+import org.openqa.selenium.TouchScreen;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriverException;
@@ -31,6 +33,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.html5.SessionStorage;
 import org.openqa.selenium.html5.WebStorage;
+import org.openqa.selenium.remote.RemoteTouchScreen;
 import org.openqa.selenium.remote.CommandExecutor;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.DriverCommand;
@@ -45,15 +48,20 @@ import com.google.common.collect.ImmutableMap;
  * The driver uses WebDriver's remote REST interface to communicate with the iphone. The iphone (or
  * iphone simulator) must be running the iWebDriver app.
  */
-public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage {
+public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen {
 
+  private TouchScreen touch;
   /**
    * This is the default port and URL for iWebDriver. Eventually it would be nice to use DNS-SD to
    * detect iWebDriver instances running non locally or on non-default ports.
    */
   protected static final String DEFAULT_IWEBDRIVER_URL =
-      "http://localhost:3001/wd/hub";
+      "http://localhost:4723/wd/hub";
   
+  public TouchScreen getTouch() {
+    return touch;
+  }
+
   public enum STORAGE_TYPE { local, session }
 
   /**
@@ -75,6 +83,7 @@ public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, We
    */
   public IPhoneDriver(URL remoteAddress) throws Exception {
     super(remoteAddress, DesiredCapabilities.iphone());
+    touch = new RemoteTouchScreen(getExecuteMethod());
   }
 
   /**
@@ -109,11 +118,6 @@ public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, We
   }
 
   @Override
-  public void close() {
-    throw new UnsupportedOperationException("Not yet implemented");
-  }
-
-  @Override
   public TargetLocator switchTo() {
     return new IPhoneTargetLocator();
   }
@@ -124,9 +128,6 @@ public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, We
       return (WebElement) executeScript("return document.activeElement || document.body;");
     }
 
-    public Alert alert() {
-      throw new UnsupportedOperationException("alert()");
-    }
   }
 
   public <X> X getScreenshotAs(OutputType<X> target) {
