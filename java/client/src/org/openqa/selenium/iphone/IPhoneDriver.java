@@ -27,6 +27,8 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.HasTouchScreen;
 import org.openqa.selenium.TouchScreen;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Rotatable;
+import org.openqa.selenium.ScreenOrientation;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -48,7 +50,7 @@ import com.google.common.collect.ImmutableMap;
  * The driver uses WebDriver's remote REST interface to communicate with the iphone. The iphone (or
  * iphone simulator) must be running the iWebDriver app.
  */
-public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen {
+public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, WebStorage, HasTouchScreen, Rotatable {
 
   private TouchScreen touch;
   /**
@@ -60,6 +62,15 @@ public class IPhoneDriver extends RemoteWebDriver implements TakesScreenshot, We
   
   public TouchScreen getTouch() {
     return touch;
+  }
+
+  public ScreenOrientation getOrientation() {
+    return ScreenOrientation.valueOf(
+      (String) execute(DriverCommand.GET_SCREEN_ORIENTATION).getValue());
+  }
+
+  public void rotate(ScreenOrientation orientation) {
+    execute(DriverCommand.SET_SCREEN_ORIENTATION, ImmutableMap.of("orientation", orientation));
   }
 
   public enum STORAGE_TYPE { local, session }
